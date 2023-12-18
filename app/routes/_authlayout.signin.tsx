@@ -10,7 +10,7 @@ export const meta: MetaFunction = () => {
     { title: "Devlinks | Login" },
     {
       name: "description",
-      content: "Welcome to Devlinks! Login to start creating!",
+      content: "Login to start creating!",
     },
   ];
 };
@@ -48,7 +48,7 @@ export default function Login() {
               name="email"
               id="email"
               placeholder="e.g. alex@email.com"
-              className="pl-10 mb-[5px]"
+              className="pl-10 mb-[3px]"
               // scuffed. Must change this
             />
           </div>
@@ -80,7 +80,7 @@ export default function Login() {
       </Form>
       <p className="pt-6 text-base font-normal text-[#737373] flex justify-center">
         Don't have an account?
-        <NavLink className="ml-1 text-[#633CFF]" to="/signup">
+        <NavLink className="ml-1 text-[#633CFF]" to="/signup" prefetch="intent">
           Create account
         </NavLink>
       </p>

@@ -29,7 +29,7 @@ export default function App() {
         <Links />
       </head>
       {/* work on this layout */}
-      <body className="font-instrument font-normal">
+      <body className="font-instrument font-normal lg:max-w-[1440px] flex justify-center items-center mx-auto bg-[#FAFAFA]">
         <Outlet />
         <ScrollRestoration />
         <Scripts />
