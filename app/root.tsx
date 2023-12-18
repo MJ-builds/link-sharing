@@ -1,4 +1,3 @@
-import { cssBundleHref } from "@remix-run/css-bundle";
 import type { LinksFunction } from "@remix-run/node";
 import {
   Links,
@@ -9,8 +8,15 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 
+// Tailwind import
+import tailwindStylesheet from "~/styles/tailwind.css";
+// Font import
+import fontsStylesheet from "~/styles/fonts.css";
+
 export const links: LinksFunction = () => [
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
+  { rel: "icon", type: "image/svg+xml", href: "icons/logo-devlinks-small.svg" },
+  { rel: "stylesheet", href: tailwindStylesheet },
+  { rel: "stylesheet", href: fontsStylesheet },
 ];
 
 export default function App() {
@@ -22,7 +28,8 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body>
+      {/* work on this layout */}
+      <body className="font-instrument font-normal">
         <Outlet />
         <ScrollRestoration />
         <Scripts />
