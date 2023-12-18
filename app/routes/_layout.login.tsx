@@ -25,7 +25,7 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function Login() {
   const data = useActionData<typeof action>();
   return (
-    <div className="bg-[#FFFFFF] p-10 rounded-xl">
+    <div className="bg-[#FFFFFF] p-10 rounded-xl w-screen md:w-full">
       <div>
         <h1 className="font-bold text-[32px]">Login</h1>
         <p className="text-[#737373] text-base mb-10">

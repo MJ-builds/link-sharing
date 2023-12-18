@@ -25,7 +25,8 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function Signup() {
   const data = useActionData<typeof action>();
   return (
-    <div className="bg-[#FFFFFF] p-10 rounded-xl">
+    // added w-screen for mobile but amend
+    <div className="bg-[#FFFFFF] p-10 rounded-xl w-screen md:w-full">
       <div>
         <h1 className="font-bold text-[32px]">Create account</h1>
         <p className="text-[#737373] text-base mb-10">
@@ -93,7 +94,7 @@ export default function Signup() {
         </p>
         <Button
           // change the min-w here and make it more central / less obscure to get the rest of the page this w
-          className="bg-[#633CFF] font-medium text-white text-base h-12 min-w-[396px]"
+          className="bg-[#633CFF] font-medium text-white text-base h-12 min-w-full md:min-w-[396px]"
           variant="outline"
         >
           Create new account
