@@ -1,5 +1,5 @@
-import type { MetaFunction } from "@remix-run/node";
-import { NavLink, Outlet, useMatches } from "@remix-run/react";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import { NavLink, Outlet, useActionData, useMatches } from "@remix-run/react";
 import EmptyPhone from "~/components/emptyphone";
 import { Button } from "~/components/ui/button";
 import LinkIcon from "~/components/ui/icons/linkicon";
@@ -21,15 +21,15 @@ export default function Layout() {
   let isActiveProfile = matches.some((match) => match.pathname === "/profile");
   return (
     // background container
-    <div className="flex justify-center bg-[#FAFAFA] w-full h-screen text-[#737373]">
+    <div className="flex h-screen w-full justify-center bg-[#FAFAFA] text-[#737373]">
       {/*  layout inner */}
-      <div className="flex flex-col w-full h-auto p-6">
-        <div className="flex justify-between items-center bg-white p-4 rounded-xl">
+      <div className="flex h-auto w-full flex-col p-6">
+        <div className="flex items-center justify-between rounded-xl bg-white p-4">
           <img src="/icons/logo-devlinks-large.svg" />
-          <div className="flex self-center gap-4 w-auto ">
+          <div className="flex w-auto gap-4 self-center ">
             <NavLink to="/links" prefetch="intent">
               <Button
-                className={`md:min-w-[122px] gap-2 text-base font-medium hover:text-[#633CFF] ${
+                className={`gap-2 text-base font-medium hover:text-[#633CFF] md:min-w-[122px] ${
                   isActiveLinks ? "bg-[#EFEBFF] text-[#633CFF] " : ""
                 }`}
               >
@@ -39,7 +39,7 @@ export default function Layout() {
             </NavLink>
             <NavLink to="/profile" prefetch="intent">
               <Button
-                className={`md:min-w-[187px] gap-2 text-base font-medium hover:text-[#633CFF] ${
+                className={`gap-2 text-base font-medium hover:text-[#633CFF] md:min-w-[187px] ${
                   isActiveProfile ? "bg-[#EFEBFF] text-[#633CFF] " : ""
                 }`}
               >
@@ -49,16 +49,16 @@ export default function Layout() {
             </NavLink>
           </div>
           <NavLink to="/preview" prefetch="intent">
-            <Button className="text-base font-medium text-[#633CFF] border border-[#633CFF] hover:bg-[#EFEBFF]">
+            <Button className="border border-[#633CFF] text-base font-medium text-[#633CFF] hover:bg-[#EFEBFF]">
               Preview
             </Button>
           </NavLink>
         </div>
-        <div className="flex flex-row w-full h-auto pt-6 gap-6">
-          <div className="hidden lg:flex bg-white w-[800px] p-6 rounded-xl items-center justify-center h-auto">
+        <div className="flex h-auto w-full flex-row gap-6 pt-6">
+          <div className="hidden h-auto w-[800px] items-center justify-center rounded-xl bg-white p-6 lg:flex">
             <EmptyPhone className="" />
           </div>
-          <div className="flex flex-col bg-white w-full h-fit p-10 rounded-xl">
+          <div className="flex h-fit w-full flex-col rounded-xl bg-white p-10">
             {/* work on the right-side outlet here. */}
             {/* className="flex justify-end w-full h-auto py-6 bg-white" */}
             <div className="">

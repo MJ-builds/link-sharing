@@ -30,7 +30,7 @@ export default function App() {
       </head>
       {/* work on this layout */}
       {/* query the 984px whether on large screens, or just add vert margin to actual pages */}
-      <body className="font-instrument font-normal lg:max-w-[1440px] md:max-w-[984px] flex justify-center items-center mx-auto h-fit bg-[#FAFAFA]">
+      <body className="mx-auto flex h-fit items-center justify-center bg-[#FAFAFA] font-instrument font-normal md:max-w-[984px] lg:max-w-[1440px]">
         <Outlet />
         <ScrollRestoration />
         <Scripts />

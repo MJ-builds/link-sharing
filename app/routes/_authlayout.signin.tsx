@@ -25,10 +25,10 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function Login() {
   const data = useActionData<typeof action>();
   return (
-    <div className="bg-[#FFFFFF] p-10 rounded-xl w-screen md:w-full">
+    <div className="w-screen rounded-xl bg-[#FFFFFF] p-10 md:w-full">
       <div>
-        <h1 className="font-bold text-[32px]">Login</h1>
-        <p className="text-[#737373] text-base mb-10">
+        <h1 className="text-[32px] font-bold">Login</h1>
+        <p className="mb-10 text-base text-[#737373]">
           Add your details below to get back into the app
         </p>
       </div>
@@ -41,14 +41,14 @@ export default function Login() {
           <div className="relative flex items-center justify-center text-center">
             <img
               src="/icons/icon-email.svg"
-              className="absolute left-3 top-1/2 transform -translate-y-1/2"
+              className="absolute left-3 top-1/2 -translate-y-1/2 transform"
             />
             <Input
               type="text"
               name="email"
               id="email"
               placeholder="e.g. alex@email.com"
-              className="pl-10 mb-[3px]"
+              className="mb-[3px] pl-10"
               // scuffed. Must change this
             />
           </div>
@@ -60,7 +60,7 @@ export default function Login() {
           <div className="relative flex items-center justify-center text-center">
             <img
               src="/icons/icon-password.svg"
-              className="absolute left-3 top-1/2 transform -translate-y-1/2"
+              className="absolute left-3 top-1/2 -translate-y-1/2 transform"
             />
             <Input
               type="password"
@@ -72,13 +72,13 @@ export default function Login() {
           </div>
         </div>
         <Button
-          className="bg-[#633CFF] font-medium text-white text-base h-12"
+          className="h-12 bg-[#633CFF] text-base font-medium text-white"
           variant="outline"
         >
           Login
         </Button>
       </Form>
-      <p className="pt-6 text-base font-normal text-[#737373] flex justify-center">
+      <p className="flex justify-center pt-6 text-base font-normal text-[#737373]">
         Don't have an account?
         <NavLink className="ml-1 text-[#633CFF]" to="/signup" prefetch="intent">
           Create account
