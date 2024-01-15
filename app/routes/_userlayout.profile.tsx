@@ -1,6 +1,6 @@
-import type { MetaFunction } from "@remix-run/node";
-import { Outlet, useMatches } from "@remix-run/react";
-import { Button } from "~/components/ui/button";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+
+import { requireAuthCookie } from "~/auth.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -11,6 +11,11 @@ export const meta: MetaFunction = () => {
     },
   ];
 };
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  let userId = await requireAuthCookie(request);
+  return null;
+}
 
 export default function Links() {
   return (

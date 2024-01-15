@@ -6,8 +6,6 @@ import {
 } from "@remix-run/node";
 import { Form } from "@remix-run/react";
 
-import { useState } from "react";
-
 import { Button } from "~/components/ui/button";
 import EmptyLinkImage from "~/components/ui/icons/emptylinkimage";
 import LinkIcon from "~/components/ui/icons/linkicon";
@@ -20,6 +18,11 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 
+// CONTEXT_TEST
+import { useContext, useState } from "react";
+import { ColorContext } from "./_userlayout";
+import { requireAuthCookie } from "~/auth.server";
+
 export const meta: MetaFunction = () => {
   return [
     { title: "Devlinks | Links" },
@@ -30,7 +33,8 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
+  let userId = await requireAuthCookie(request);
   return null;
 }
 
@@ -47,26 +51,37 @@ const platforms = [
     name: "GitHub",
     icon: "/icons/icon-github.svg",
     link: "https://github.com/",
+    color: "#171515",
   },
   {
     name: "Twitter",
     icon: "/icons/icon-twitter.svg",
     link: "https://twitter.com/",
+    color: "#1DA1F2",
+  },
+  {
+    name: "Youtube",
+    icon: "/icons/icon-youtube.svg",
+    link: "https://youtube.com/",
+    color: "#FF0000",
   },
   {
     name: "LinkedIn",
     icon: "/icons/icon-linkedin.svg",
     link: "https://linkedin.com/",
+    color: "#0077B5",
   },
   {
     name: "Codepen",
     icon: "/icons/icon-codepen.svg",
     link: "https://codepen.io/",
+    color: "#4FBA49",
   },
   {
     name: "Codewars",
     icon: "/icons/icon-codewars.svg",
     link: "https://www.codewars.com/",
+    color: "#333",
   },
 ];
 
@@ -89,8 +104,25 @@ export function GetStartedBanner() {
 }
 
 export function GenerateLinks() {
-  const [selectedPlatformName, setSelectedPlatformName] = useState("");
   const [userInput, setUserInput] = useState("");
+
+  // CONTEXT_TEST: Consume the color context
+  const { setColor, selectedPlatformName, setSelectedPlatformName, setIcon } =
+    useContext(ColorContext);
+
+  // CONTEXT_TEST: Function to handle select change and update color
+  const handleSelectChange = (value: any) => {
+    // Find the selected platform
+    const selectedPlatform = platforms.find(
+      (platform) => platform.name === value,
+    );
+    // Set the color in the context
+    if (selectedPlatform) {
+      setColor(selectedPlatform.color);
+      setIcon(selectedPlatform.icon);
+    }
+    setSelectedPlatformName(value);
+  };
 
   const selectedPlatform = platforms.find(
     (platform) => platform.name === selectedPlatformName,
@@ -114,7 +146,10 @@ export function GenerateLinks() {
             <Select
               name="platform"
               value={selectedPlatformName}
-              onValueChange={setSelectedPlatformName}
+              onValueChange={(value) => {
+                setSelectedPlatformName(value);
+                handleSelectChange(value);
+              }}
             >
               <SelectTrigger className="relative h-auto bg-white px-4 py-3  pl-10">
                 <SelectValue placeholder="Select Platform" />
@@ -183,7 +218,6 @@ export default function Links() {
   const [enableLinks, setEnableLinks] = useState(false);
 
   return (
-    // background container
     <div className="flex flex-col gap-10 ">
       <div>
         <h1 className="text-[32px] font-bold text-[#333333]">

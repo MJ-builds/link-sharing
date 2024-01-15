@@ -1,9 +1,18 @@
-import { type ActionFunctionArgs, MetaFunction, json } from "@remix-run/node";
+import {
+  type ActionFunctionArgs,
+  MetaFunction,
+  json,
+  redirect,
+} from "@remix-run/node";
 import { Form, NavLink, useActionData } from "@remix-run/react";
+
+import { signupValidate } from "~/lib/utils";
 
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Button } from "~/components/ui/button";
+import { authCookie } from "~/auth.server";
+import { createAccount } from "./_queries";
 
 export const meta: MetaFunction = () => {
   return [
@@ -17,19 +26,33 @@ export const meta: MetaFunction = () => {
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const name = formData.get("email") as String;
-  console.log(name);
-  return json({ name });
+  const email = String(formData.get("email"));
+  const password = String(formData.get("password"));
+  const confirmPassword = String(formData.get("confirm-password"));
+
+  let errors = await signupValidate(email, password, confirmPassword);
+  if (errors) {
+    return { errors };
+  }
+  let user = await createAccount(email, password);
+  return redirect("/profile", {
+    headers: {
+      "Set-Cookie": await authCookie.serialize(user.id),
+    },
+  });
 }
 
 export default function Signup() {
-  const data = useActionData<typeof action>();
+  const actionData = useActionData<typeof action>();
+  let emailError = actionData?.errors?.email;
+  let passwordError = actionData?.errors?.password;
+
   return (
     // added w-screen for mobile but amend
-    <div className="bg-[#FFFFFF] p-10 rounded-xl w-screen md:w-full">
+    <div className="w-screen rounded-xl bg-[#FFFFFF] p-10 md:w-full">
       <div>
-        <h1 className="font-bold text-[32px]">Create account</h1>
-        <p className="text-[#737373] text-base mb-10">
+        <h1 className="text-[32px] font-bold">Create account</h1>
+        <p className="mb-10 text-base text-[#737373]">
           Let's get you started sharing your links!
         </p>
       </div>
@@ -42,15 +65,20 @@ export default function Signup() {
           <div className="relative flex items-center justify-center text-center">
             <img
               src="/icons/icon-email.svg"
-              className="absolute left-3 top-1/2 transform -translate-y-1/2"
+              className="absolute left-3 top-1/2 -translate-y-1/2 transform"
             />
             <Input
               type="text"
               name="email"
               id="email"
               placeholder="e.g. alex@email.com"
-              className="pl-10 mb-[3px]" // scuffed. Must change this
+              className={`mb-[3px] pl-10 ${
+                emailError ? "border-[#FF3939] focus:border-[#FF3939]" : ""
+              }`}
             />
+            <span className="absolute right-3 text-xs text-[#FF3939]">
+              {emailError}
+            </span>
           </div>
         </div>
         <div>
@@ -60,15 +88,20 @@ export default function Signup() {
           <div className="relative flex items-center justify-center text-center">
             <img
               src="/icons/icon-password.svg"
-              className="absolute left-3 top-1/2 transform -translate-y-1/2"
+              className="absolute left-3 top-1/2 -translate-y-1/2 transform"
             />
             <Input
               type="password"
               name="password"
               id="password"
               placeholder="At least 8 characters"
-              className="pl-10"
+              className={`pl-10 ${
+                emailError ? "border-[#FF3939] focus:border-[#FF3939]" : ""
+              }`}
             />
+            <span className="absolute right-3 text-xs text-[#FF3939]">
+              {passwordError}
+            </span>
           </div>
         </div>
         <div>
@@ -78,15 +111,20 @@ export default function Signup() {
           <div className="relative flex items-center justify-center text-center">
             <img
               src="/icons/icon-password.svg"
-              className="absolute left-3 top-1/2 transform -translate-y-1/2"
+              className="absolute left-3 top-1/2 -translate-y-1/2 transform"
             />
             <Input
               type="password"
               name="confirm-password"
               id="confirm-password"
               placeholder="At least 8 characters"
-              className="pl-10"
+              className={`pl-10 ${
+                emailError ? "border-[#FF3939] focus:border-[#FF3939]" : ""
+              }`}
             />
+            <span className="absolute right-3 text-xs text-[#FF3939]">
+              {passwordError}
+            </span>
           </div>
         </div>
         <p className="text-xs text-[#737373]">
@@ -94,13 +132,13 @@ export default function Signup() {
         </p>
         <Button
           // change the min-w here and make it more central / less obscure to get the rest of the page this w
-          className="bg-[#633CFF] font-medium text-white text-base h-12 min-w-full md:min-w-[396px]"
+          className="h-12 min-w-full bg-[#633CFF] text-base font-medium text-white md:min-w-[396px]"
           variant="outline"
         >
           Create new account
         </Button>
       </Form>
-      <p className="pt-6 text-base font-normal text-[#737373] flex justify-center">
+      <p className="flex justify-center pt-6 text-base font-normal text-[#737373]">
         Already have an account?
         <NavLink className="ml-1 text-[#633CFF]" to="/signin" prefetch="intent">
           Login

@@ -1,9 +1,17 @@
-import { type ActionFunctionArgs, MetaFunction, json } from "@remix-run/node";
+import {
+  type ActionFunctionArgs,
+  MetaFunction,
+  json,
+  redirect,
+} from "@remix-run/node";
 import { Form, NavLink, useActionData } from "@remix-run/react";
 
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Button } from "~/components/ui/button";
+import { signinValidate } from "~/lib/utils";
+import { login } from "./_queries";
+import { authCookie } from "~/auth.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -17,13 +25,29 @@ export const meta: MetaFunction = () => {
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const name = formData.get("email") as String;
-  console.log(name);
-  return json({ name });
+  const email = String(formData.get("email"));
+  const password = String(formData.get("password"));
+  let errors = await signinValidate(email, password);
+  if (errors) {
+    return json({ errors }, { status: 400 });
+  }
+  let userId = await login(email, password);
+  if (!userId) {
+    return json(
+      { errors: { email: "Invalid email or password" } },
+      { status: 400 },
+    );
+  }
+  return redirect("/profile", {
+    headers: {
+      "Set-Cookie": await authCookie.serialize(userId),
+    },
+  });
 }
 
 export default function Login() {
-  const data = useActionData<typeof action>();
+  const actionData = useActionData<typeof action>();
+  let emailError = actionData?.errors?.email;
   return (
     <div className="w-screen rounded-xl bg-[#FFFFFF] p-10 md:w-full">
       <div>
@@ -48,9 +72,13 @@ export default function Login() {
               name="email"
               id="email"
               placeholder="e.g. alex@email.com"
-              className="mb-[3px] pl-10"
-              // scuffed. Must change this
+              className={`mb-[3px] pl-10 ${
+                emailError ? "border-[#FF3939] focus:border-[#FF3939]" : ""
+              }`}
             />
+            <span className="absolute right-3 text-xs text-[#FF3939]">
+              {emailError}
+            </span>
           </div>
         </div>
         <div>
@@ -67,8 +95,13 @@ export default function Login() {
               name="password"
               id="password"
               placeholder="Enter your password"
-              className="pl-10"
+              className={`pl-10 ${
+                emailError ? "border-[#FF3939] focus:border-[#FF3939]" : ""
+              }`}
             />
+            <span className="absolute right-3 text-xs text-[#FF3939]">
+              {emailError}
+            </span>
           </div>
         </div>
         <Button

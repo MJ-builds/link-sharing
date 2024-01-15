@@ -13,10 +13,9 @@ export const meta: MetaFunction = () => {
 
 export default function Route() {
   return (
-    // background container
-    <div className="flex justify-center items-center bg-[#FAFAFA] w-full h-screen">
+    <div className="flex h-screen w-full items-center justify-center bg-[#FAFAFA]">
       {/*  layout inner */}
-      <div className="flex w-auto h-auto bg-[#FAFAFA] border">
+      <div className="flex h-auto w-auto border bg-[#FAFAFA]">
         <div className="flex flex-col">
           <div className="flex justify-center">DEVLINKS</div>
           <Outlet />
