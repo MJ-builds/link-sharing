@@ -52,14 +52,25 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!userData) {
     return json({ error: "User data not found" });
   }
+
+  // this will be changed to findMany perhaps later when multiple links added?
+  const userLinks = await prisma.userlinks.findUnique({
+    where: { userId },
+  });
+
+  if (!userLinks) {
+    return json({ error: "User links not found" });
+  }
+
   return json({
     userId,
     userData,
+    userLinks,
   });
 }
 
 // explore this more
-type LoaderData = {
+type UserLoaderData = {
   userId: string;
   userData: {
     id: string;
@@ -68,10 +79,20 @@ type LoaderData = {
     lastName: string;
   };
 };
+type UserLinksLoaderData = {
+  userId: string;
+  userLinks: {
+    platform: string;
+    link: string;
+    icon: string;
+    color: string;
+  };
+};
 
 export function EmptyPhone() {
-  const { userData } = useLoaderData<LoaderData>();
-
+  const { userData } = useLoaderData<UserLoaderData>();
+  const { userLinks } = useLoaderData<UserLinksLoaderData>();
+  console.log(userLinks.color);
   return (
     <div className="relative">
       <svg
@@ -96,12 +117,17 @@ export function EmptyPhone() {
         <rect width="160" height="16" x="73.5" y="185" fill="#EEE" rx="8" />
 
         <rect width="72" height="8" x="117.5" y="214" fill="#EEE" rx="4" />
-
-        <rect width="237" height="44" x="35" y="278" fill="#EEE" rx="8" />
-        <rect width="237" height="44" x="35" y="342" fill="#EEE" rx="8" />
-        <rect width="237" height="44" x="35" y="406" fill="#EEE" rx="8" />
-        <rect width="237" height="44" x="35" y="470" fill="#EEE" rx="8" />
-        <rect width="237" height="44" x="35" y="534" fill="#EEE" rx="8" />
+        {!userLinks ? (
+          <>
+            <rect width="237" height="44" x="35" y="278" fill="#EEE" rx="8" />
+            <rect width="237" height="44" x="35" y="342" fill="#EEE" rx="8" />
+            <rect width="237" height="44" x="35" y="406" fill="#EEE" rx="8" />
+            <rect width="237" height="44" x="35" y="470" fill="#EEE" rx="8" />
+            <rect width="237" height="44" x="35" y="534" fill="#EEE" rx="8" />
+          </>
+        ) : (
+          ""
+        )}
       </svg>
 
       {userData.firstName && userData.lastName ? (
@@ -121,7 +147,36 @@ export function EmptyPhone() {
         <div></div>
       )}
 
-      <div className=" absolute left-[35px] top-[278px] flex h-[44px] w-[237px] items-center justify-center rounded-lg bg-blue-300 text-lg text-black"></div>
+      {userLinks ? (
+        <div
+          style={{ backgroundColor: userLinks.color }}
+          className="absolute left-[35px] top-[278px] flex h-[44px] w-[237px] items-center justify-center rounded-lg text-lg text-white"
+        >
+          <img
+            className="absolute left-[16px] transform text-white"
+            src={userLinks.icon}
+          />
+          <div className="absolute left-[40px]  text-xs text-white">
+            {userLinks.platform}
+          </div>
+          <div className="absolute right-[16px] text-white">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="none"
+              viewBox="0 0 16 16"
+            >
+              <path
+                fill="currentColor"
+                d="M2.667 7.333v1.334h8L7 12.333l.947.947L13.227 8l-5.28-5.28L7 3.667l3.667 3.666h-8Z"
+              />
+            </svg>
+          </div>
+        </div>
+      ) : (
+        <div></div>
+      )}
     </div>
   );
 }
@@ -131,7 +186,7 @@ export default function Layout() {
   let isActiveLinks = matches.some((match) => match.pathname === "/links");
   let isActiveProfile = matches.some((match) => match.pathname === "/profile");
 
-  const { userId } = useLoaderData<LoaderData>();
+  const { userId } = useLoaderData<UserLoaderData>();
 
   return (
     <div className="flex h-screen w-full justify-center bg-[#FAFAFA] text-[#737373]">

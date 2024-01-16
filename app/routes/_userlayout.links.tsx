@@ -21,6 +21,7 @@ import {
 // CONTEXT_TEST
 import { useState } from "react";
 import { requireAuthCookie } from "~/auth.server";
+import { prisma } from "~/db/prisma";
 
 export const meta: MetaFunction = () => {
   return [
@@ -38,10 +39,41 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
+  let userId = await requireAuthCookie(request);
   const formData = await request.formData();
-  const platform = formData.get("platform");
-  const link = formData.get("link");
-  return json({ platform, link });
+  const platformName = String(formData.get("platform"));
+  const link = String(formData.get("link"));
+
+  // Find the selected platform
+  const selectedPlatform = platforms.find(
+    (platform) => platform.name === platformName,
+  );
+
+  if (!selectedPlatform) return null;
+
+  // Probs a better way to do this...
+  const icon = selectedPlatform ? String(selectedPlatform.icon) : String("");
+  const color = selectedPlatform ? String(selectedPlatform.color) : String("");
+
+  // to work on and schema to add arrays / multiple entries
+  await prisma.userlinks.upsert({
+    where: { userId: userId },
+    update: {
+      platform: platformName,
+      link: link,
+      icon: icon,
+      color: color,
+    },
+    create: {
+      platform: platformName,
+      link: link,
+      icon: icon,
+      color: color,
+      userId: userId,
+    },
+  });
+
+  return json({ message: "success" });
 }
 
 // to be moved to JSON file or DB depending.
@@ -59,7 +91,7 @@ const platforms = [
     color: "#1DA1F2",
   },
   {
-    name: "Youtube",
+    name: "YouTube",
     icon: "/icons/icon-youtube.svg",
     link: "https://youtube.com/",
     color: "#FF0000",
@@ -198,7 +230,7 @@ export default function Links() {
   const [enableLinks, setEnableLinks] = useState(false);
 
   return (
-    <div className="flex flex-col gap-10 ">
+    <div className="flex h-full flex-col gap-10">
       <div>
         <h1 className="text-[32px] font-bold text-[#333333]">
           Customize your links
