@@ -11,9 +11,11 @@ datasource db {
 }
 
 model User {
-  id       String    @id @default(uuid())
-  email    String    @unique
-  Password Password?
+  id        String    @id @default(uuid())
+  email     String    @unique
+  firstName String? //optional
+  lastName  String? //optional
+  Password  Password?
 }
 
 model Password {

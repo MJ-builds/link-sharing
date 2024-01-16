@@ -18,20 +18,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return null;
 }
 
-export default function Preview({
-  color,
-  selectedPlatformName,
-  icon,
-}: {
-  color: string;
-  selectedPlatformName: string;
-  icon: string;
-}) {
-  return (
-    <EmptyPhone
-      color={color}
-      selectedPlatformName={selectedPlatformName}
-      icon={icon}
-    />
-  );
+export default function Preview() {
+  return <EmptyPhone />;
 }

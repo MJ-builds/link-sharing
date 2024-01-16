@@ -30,4 +30,5 @@ export async function requireAuthCookie(request: Request) {
       },
     });
   }
+  return userId;
 }

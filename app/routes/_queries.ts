@@ -22,6 +22,7 @@ export async function createAccount(email: string, password: string) {
       email: email,
       Password: { create: { hash, salt } },
     },
+    include: { Password: true },
   });
 }
 

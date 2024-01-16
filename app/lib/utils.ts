@@ -54,3 +54,15 @@ export async function signinValidate(email: string, password: string) {
 
   return Object.keys(errors).length ? errors : null;
 }
+
+export async function fullNameValidate(firstName: string, lastName: string) {
+  let errors: { firstName?: string; lastName?: string } = {};
+  if (!firstName) {
+    errors.firstName = "Can't be empty";
+  }
+  if (!lastName) {
+    errors.lastName = "Can't be empty";
+  }
+
+  return Object.keys(errors).length ? errors : null;
+}

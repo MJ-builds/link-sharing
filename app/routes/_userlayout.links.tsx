@@ -19,8 +19,7 @@ import {
 } from "~/components/ui/select";
 
 // CONTEXT_TEST
-import { useContext, useState } from "react";
-import { ColorContext } from "./_userlayout";
+import { useState } from "react";
 import { requireAuthCookie } from "~/auth.server";
 
 export const meta: MetaFunction = () => {
@@ -105,28 +104,12 @@ export function GetStartedBanner() {
 
 export function GenerateLinks() {
   const [userInput, setUserInput] = useState("");
-
-  // CONTEXT_TEST: Consume the color context
-  const { setColor, selectedPlatformName, setSelectedPlatformName, setIcon } =
-    useContext(ColorContext);
-
-  // CONTEXT_TEST: Function to handle select change and update color
-  const handleSelectChange = (value: any) => {
-    // Find the selected platform
-    const selectedPlatform = platforms.find(
-      (platform) => platform.name === value,
-    );
-    // Set the color in the context
-    if (selectedPlatform) {
-      setColor(selectedPlatform.color);
-      setIcon(selectedPlatform.icon);
-    }
-    setSelectedPlatformName(value);
-  };
+  const [selectedPlatformName, setSelectedPlatformName] = useState("");
 
   const selectedPlatform = platforms.find(
     (platform) => platform.name === selectedPlatformName,
   );
+
   return (
     <Form method="POST" id="linksForm">
       <div className="flex h-auto w-full rounded-xl bg-[#FAFAFA] text-[#737373]">
@@ -146,10 +129,7 @@ export function GenerateLinks() {
             <Select
               name="platform"
               value={selectedPlatformName}
-              onValueChange={(value) => {
-                setSelectedPlatformName(value);
-                handleSelectChange(value);
-              }}
+              onValueChange={setSelectedPlatformName}
             >
               <SelectTrigger className="relative h-auto bg-white px-4 py-3  pl-10">
                 <SelectValue placeholder="Select Platform" />
