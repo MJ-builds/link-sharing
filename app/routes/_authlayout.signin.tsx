@@ -46,8 +46,9 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function Login() {
-  const actionData = useActionData<typeof action>();
-  let emailError = actionData?.errors?.email;
+  const actionData= useActionData<typeof action>();
+  const emailError: string | undefined
+      = actionData?.errors?.email;
   return (
     <div className="w-screen rounded-xl bg-[#FFFFFF] p-10 md:w-full">
       <div>

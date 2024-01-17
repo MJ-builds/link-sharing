@@ -6,7 +6,6 @@ import {
 import {
   NavLink,
   Outlet,
-  useActionData,
   useLoaderData,
   useMatches,
 } from "@remix-run/react";
@@ -14,7 +13,7 @@ import { Button } from "~/components/ui/button";
 import LinkIcon from "~/components/ui/icons/linkicon";
 import ProfileIcon from "~/components/ui/icons/profileicon";
 
-import { authCookie, requireAuthCookie } from "~/auth.server";
+import { requireAuthCookie } from "~/auth.server";
 
 import { prisma } from "~/db/prisma";
 

@@ -35,7 +35,7 @@ export const meta: MetaFunction = () => {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   let userId = await requireAuthCookie(request);
-  return null;
+  return json({userId})
 }
 
 export async function action({ request }: ActionFunctionArgs) {

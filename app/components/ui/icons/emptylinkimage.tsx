@@ -4,7 +4,7 @@ interface LinkIconProps {
   className?: string;
 }
 
-const EmptyLinkImage: FC<LinkIconProps> = ({ className }) => (
+const EmptyLinkImage: FC<LinkIconProps> = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="250"
