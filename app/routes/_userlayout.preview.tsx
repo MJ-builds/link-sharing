@@ -17,6 +17,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   let userId = await requireAuthCookie(request);
   return json({userId})
 }
+//generate a helper function for clicking
+
 
 export default function Preview() {
   return <EmptyPhone />;

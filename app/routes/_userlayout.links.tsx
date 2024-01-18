@@ -51,7 +51,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (!selectedPlatform) return null;
 
-  // Probs a better way to do this...
+  // Probably a better way to do this...
   const icon = selectedPlatform ? String(selectedPlatform.icon) : String("");
   const color = selectedPlatform ? String(selectedPlatform.color) : String("");
 

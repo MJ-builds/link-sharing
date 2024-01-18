@@ -66,3 +66,6 @@ export async function fullNameValidate(firstName: string, lastName: string) {
 
   return Object.keys(errors).length ? errors : null;
 }
+
+
+

@@ -4,7 +4,9 @@ import type {
   MetaFunction,
 } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
-import { json } from "react-router";
+import { json,  unstable_composeUploadHandlers as composeUploadHandlers,
+  unstable_createMemoryUploadHandler as createMemoryUploadHandler,
+  unstable_parseMultipartFormData as parseMultipartFormData } from "@remix-run/node";
 
 import { requireAuthCookie } from "~/auth.server";
 import { Button } from "~/components/ui/button";
@@ -13,6 +15,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { prisma } from "~/db/prisma";
 import { fullNameValidate } from "~/lib/utils";
+import { uploadImage } from "~/lib/image.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -20,7 +23,7 @@ export const meta: MetaFunction = () => {
     {
       name: "description",
       content: "Layout Index",
-    },
+    }
   ];
 };
 
@@ -35,14 +38,32 @@ export async function loader({ request }: LoaderFunctionArgs) {
       lastName: true,
     },
   });
+
   return json({ userData });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
+
   let userId = await requireAuthCookie(request);
-  const formData = await request.formData();
+
+  const uploadHandler = composeUploadHandlers(
+    async ({ name, data }) => {
+      if (name !== "img") {
+        return undefined
+      }
+      const uploadedImage = await uploadImage(data)
+      return uploadedImage.secure_url;
+    },
+    createMemoryUploadHandler()
+  );
+  // const formData = await request.formData();
+  // const firstName = String(formData.get("firstName"));
+  // const lastName = String(formData.get("lastName"));
+
+  const formData = await parseMultipartFormData(request, uploadHandler)
   const firstName = String(formData.get("firstName"));
   const lastName = String(formData.get("lastName"));
+  const imageSource = String(formData.get('img'))
 
   let errors = await fullNameValidate(firstName, lastName);
   if (errors) {
@@ -51,17 +72,34 @@ export async function action({ request }: ActionFunctionArgs) {
 
   await prisma.user.update({
     where: { id: userId },
-    data: { firstName, lastName },
+    data: { firstName, lastName, profileImage: imageSource },
   });
+
+  console.log(imageSource)
 
   return json({ success: "Profile updated successfully" });
 }
+// rename to something better - also add image to shape when implemented
+type LoaderData = {
+  userData: {
+  firstName: string,
+  lastName: string,
+  email: string
+  }
+}
+// rename to something better
+type ActionData = {
+  errors: {
+    firstName: string,
+    lastName: string
+  }
+}
 
 export default function Profile() {
-  const { userData } = useLoaderData<typeof loader>();
+  const { userData } = useLoaderData<LoaderData>();
   const { firstName, lastName, email } = userData;
 
-  const actionData = useActionData<typeof action>();
+  const actionData = useActionData<ActionData>();
   let firstNameErrors = actionData?.errors?.firstName;
   let lastNameErrors = actionData?.errors?.lastName;
 
@@ -75,18 +113,22 @@ export default function Profile() {
           Add your details to create a personal touch to your profile.
         </p>
       </div>
-      <Form method="POST" id="profileForm">
+      {/* image upload multipart - working on */}
+      <Form method="POST" id="profileForm" encType='multipart/form-data'>
         <div className="flex flex-col gap-6">
           <div className="flex h-auto w-full justify-center gap-3 rounded-xl bg-[#FAFAFA] p-5">
             <div className="grid h-auto w-full grid-cols-3 gap-4">
               <div className="flex flex-1 items-center justify-start">
                 Profile picture
               </div>
+
+              <Label className='hover:cursor-pointer' htmlFor="img" >
               <div className="flex h-[193px] flex-1 flex-col items-center justify-center gap-2 rounded-xl bg-[#EFEBFF] font-semibold text-[#633CFF]">
+                <Input className='hidden' type='file' name='img' id='img' accept="image/png, image/jpeg"/>
                 <UploadImageIcon />
                 <div className="">+ Upload Image</div>
               </div>
-
+              </Label>
               <div className="flex h-auto flex-1 flex-col justify-center pl-2 text-start text-xs">
                 <div>Image must be below 1024x1024px.</div>
                 <div>Use PNG or JPG format.</div>

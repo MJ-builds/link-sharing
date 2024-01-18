@@ -4,10 +4,11 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import {
+  Link,
   NavLink,
   Outlet,
   useLoaderData,
-  useMatches,
+  useMatches
 } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import LinkIcon from "~/components/ui/icons/linkicon";
@@ -45,6 +46,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       email: true,
       firstName: true,
       lastName: true,
+      profileImage: true,
     },
   });
 
@@ -76,6 +78,7 @@ type UserLoaderData = {
     email: string;
     firstName: string;
     lastName: string;
+    profileImage: string
   };
 };
 type UserLinksLoaderData = {
@@ -91,7 +94,7 @@ type UserLinksLoaderData = {
 export function EmptyPhone() {
   const { userData } = useLoaderData<UserLoaderData>();
   const { userLinks } = useLoaderData<UserLinksLoaderData>();
-  console.log(userLinks.color);
+
   return (
     <div className="relative">
       <svg
@@ -129,8 +132,28 @@ export function EmptyPhone() {
         )}
       </svg>
 
+      {userData.profileImage? (
+        <div style={
+          {
+            width: "96px",
+            height: "96px",
+            borderRadius: "50%",
+            backgroundImage: `url(${userData.profileImage})`,
+            backgroundPosition: "center center",
+            backgroundSize: "cover",
+            position: "absolute",
+            left: `calc(153.5px - 48px)`,
+            top: `calc(112px - 48px)`
+          }
+        }>
+        </div>
+      ) : (
+        <div></div>
+      )}
+
       {userData.firstName && userData.lastName ? (
-        <div className=" absolute left-[73.5px] top-[185px] flex h-[16px] w-[160px] items-center justify-center bg-white  text-lg font-semibold text-[#333]">
+        <div
+          className=" absolute left-[73.5px] top-[185px] flex h-[16px] w-[160px] items-center justify-center bg-white  text-lg font-semibold text-[#333]">
           {" "}
           {userData.firstName} {userData.lastName}
         </div>
@@ -154,11 +177,13 @@ export function EmptyPhone() {
           <img
             className="absolute left-[16px] transform text-white"
             src={userLinks.icon}
+          alt="selected user links platform icon"
           />
           <div className="absolute left-[40px]  text-xs text-white">
             {userLinks.platform}
           </div>
           <div className="absolute right-[16px] text-white">
+            <Link to={userLinks.link} target="_blank">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
@@ -170,7 +195,9 @@ export function EmptyPhone() {
                 fill="currentColor"
                 d="M2.667 7.333v1.334h8L7 12.333l.947.947L13.227 8l-5.28-5.28L7 3.667l3.667 3.666h-8Z"
               />
+
             </svg>
+            </Link>
           </div>
         </div>
       ) : (
@@ -192,7 +219,7 @@ export default function Layout() {
       {/*  layout inner */}
       <div className="flex h-auto w-full flex-col p-6">
         <div className="flex items-center justify-between rounded-xl bg-white p-4">
-          <img src="/icons/logo-devlinks-large.svg" />
+          <img src="/icons/logo-devlinks-large.svg" alt="main logo for devlinks" />
           <div className="flex w-auto gap-4 self-center ">
             <NavLink to="/links" prefetch="intent">
               <Button
