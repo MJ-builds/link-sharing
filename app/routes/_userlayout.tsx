@@ -49,7 +49,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
       profileImage: true,
     },
   });
-
   if (!userData) {
     return json({ error: "User data not found" });
   }
@@ -67,33 +66,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
     userId,
     userData,
     userLinks,
-  });
+  })
 }
 
-// explore this more
-type UserLoaderData = {
-  userId: string;
-  userData: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    profileImage: string
-  };
-};
-type UserLinksLoaderData = {
-  userId: string;
-  userLinks: {
-    platform: string;
-    link: string;
-    icon: string;
-    color: string;
-  };
-};
-
 export function EmptyPhone() {
-  const { userData } = useLoaderData<UserLoaderData>();
-  const { userLinks } = useLoaderData<UserLinksLoaderData>();
+  const { userData }   = useLoaderData<typeof loader>();
+  const { userLinks }  = useLoaderData<typeof loader>();
+  // const { userData } = useLoaderData<UserLoaderData>();
+  // const { userLinks } = useLoaderData<UserLinksLoaderData>();
+
+
 
   return (
     <div className="relative">
@@ -132,7 +114,7 @@ export function EmptyPhone() {
         )}
       </svg>
 
-      {userData.profileImage? (
+      {userData.profileImage ? (
         <div style={
           {
             width: "96px",

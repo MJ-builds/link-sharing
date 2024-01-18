@@ -36,9 +36,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
       email: true,
       firstName: true,
       lastName: true,
+      profileImage: true, // unsure
     },
   });
-
   return json({ userData });
 }
 
@@ -51,31 +51,29 @@ export async function action({ request }: ActionFunctionArgs) {
       if (name !== "img") {
         return undefined
       }
+
       const uploadedImage = await uploadImage(data)
       return uploadedImage.secure_url;
     },
     createMemoryUploadHandler()
   );
-  // const formData = await request.formData();
-  // const firstName = String(formData.get("firstName"));
-  // const lastName = String(formData.get("lastName"));
 
   const formData = await parseMultipartFormData(request, uploadHandler)
   const firstName = String(formData.get("firstName"));
   const lastName = String(formData.get("lastName"));
-  const imageSource = String(formData.get('img'))
+  let imageSource = String(formData.get('img'))
 
   let errors = await fullNameValidate(firstName, lastName);
   if (errors) {
     return json({ errors }, { status: 400 });
   }
 
+  console.log(imageSource)
+
   await prisma.user.update({
     where: { id: userId },
     data: { firstName, lastName, profileImage: imageSource },
   });
-
-  console.log(imageSource)
 
   return json({ success: "Profile updated successfully" });
 }
@@ -84,7 +82,7 @@ type LoaderData = {
   userData: {
   firstName: string,
   lastName: string,
-  email: string
+  email: string,
   }
 }
 // rename to something better
