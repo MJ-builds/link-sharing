@@ -1,10 +1,11 @@
-import {
-  type LoaderFunctionArgs,
+import { json } from "@remix-run/node";
+import type {
   MetaFunction,
-  type ActionFunctionArgs,
-  json,
+  LoaderFunctionArgs,
+  ActionFunctionArgs,
 } from "@remix-run/node";
-import { Form } from "@remix-run/react";
+
+import { Form, useActionData, useLoaderData } from "@remix-run/react";
 
 import { Button } from "~/components/ui/button";
 import EmptyLinkImage from "~/components/ui/icons/emptylinkimage";
@@ -23,6 +24,12 @@ import { useState } from "react";
 import { requireAuthCookie } from "~/auth.server";
 import { prisma } from "~/db/prisma";
 
+// fine here for now
+import platforms from "~/platforms/platforms.json";
+
+import { optional, z } from "zod";
+import { parse } from "@conform-to/zod";
+
 export const meta: MetaFunction = () => {
   return [
     { title: "Devlinks | Links" },
@@ -35,86 +42,72 @@ export const meta: MetaFunction = () => {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   let userId = await requireAuthCookie(request);
-  return json({userId})
+
+  // TODO: change name to be more uniform across loaders/actions
+  const userLinksData = await prisma.userlinks.findUnique({
+    where: { userId },
+  });
+
+  if (!userLinksData) {
+    return json({ error: "no user links data" });
+  }
+
+  return json({ userLinksData });
 }
+
+const UserLinksSchema = z.object({
+  platform: z.string({ required_error: "platform is required" }),
+  link: z.string({ required_error: "link is required" }),
+});
 
 export async function action({ request }: ActionFunctionArgs) {
   let userId = await requireAuthCookie(request);
   const formData = await request.formData();
-  const platformName = String(formData.get("platform"));
-  const link = String(formData.get("link"));
+  const submission = parse(formData, {
+    schema: UserLinksSchema,
+  });
+
+  if (!submission.value) {
+    return json({ status: "error", submission } as const, { status: 400 });
+  }
+
+  const { platform, link } = submission.value;
 
   // Find the selected platform
   const selectedPlatform = platforms.find(
-    (platform) => platform.name === platformName,
+    (platform_) => platform_.name === platform,
   );
+  // can probably improve this.
+  if (!selectedPlatform) {
+    return json(
+      { status: "error", message: "Invalid platform selected" },
+      { status: 400 },
+    );
+  }
 
-  if (!selectedPlatform) return null;
-
-  // Probably a better way to do this...
-  const icon = selectedPlatform ? String(selectedPlatform.icon) : String("");
-  const color = selectedPlatform ? String(selectedPlatform.color) : String("");
+  // Construct the full link based on the selected platform
+  const fullLink = `${selectedPlatform.link}${link}`;
 
   // to work on and schema to add arrays / multiple entries
   await prisma.userlinks.upsert({
     where: { userId: userId },
     update: {
-      platform: platformName,
-      link: link,
-      icon: icon,
-      color: color,
+      platform: platform,
+      link: fullLink,
+      icon: selectedPlatform.icon,
+      color: selectedPlatform.color,
     },
     create: {
-      platform: platformName,
-      link: link,
-      icon: icon,
-      color: color,
+      platform: platform,
+      link: fullLink,
+      icon: selectedPlatform.icon,
+      color: selectedPlatform.color,
       userId: userId,
     },
   });
 
   return json({ message: "success" });
 }
-
-// to be moved to JSON file or DB depending.
-const platforms = [
-  {
-    name: "GitHub",
-    icon: "/icons/icon-github.svg",
-    link: "https://github.com/",
-    color: "#171515",
-  },
-  {
-    name: "Twitter",
-    icon: "/icons/icon-twitter.svg",
-    link: "https://twitter.com/",
-    color: "#1DA1F2",
-  },
-  {
-    name: "YouTube",
-    icon: "/icons/icon-youtube.svg",
-    link: "https://youtube.com/",
-    color: "#FF0000",
-  },
-  {
-    name: "LinkedIn",
-    icon: "/icons/icon-linkedin.svg",
-    link: "https://linkedin.com/",
-    color: "#0077B5",
-  },
-  {
-    name: "Codepen",
-    icon: "/icons/icon-codepen.svg",
-    link: "https://codepen.io/",
-    color: "#4FBA49",
-  },
-  {
-    name: "Codewars",
-    icon: "/icons/icon-codewars.svg",
-    link: "https://www.codewars.com/",
-    color: "#333",
-  },
-];
 
 export function GetStartedBanner() {
   return (
@@ -135,12 +128,13 @@ export function GetStartedBanner() {
 }
 
 export function GenerateLinks() {
-  const [userInput, setUserInput] = useState("");
-  const [selectedPlatformName, setSelectedPlatformName] = useState("");
-
-  const selectedPlatform = platforms.find(
-    (platform) => platform.name === selectedPlatformName,
-  );
+  const { userLinksData } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
+  const errors =
+    actionData?.status === "error" ? actionData.submission.error : null;
+  // const selectedPlatform = platforms.find(
+  //   (platform) => platform.name === platform,
+  // );
 
   return (
     <Form method="POST" id="linksForm">
@@ -158,11 +152,7 @@ export function GenerateLinks() {
           </div>
           <div className="flex flex-col">
             <p className="mb-1 text-xs">Platform</p>
-            <Select
-              name="platform"
-              value={selectedPlatformName}
-              onValueChange={setSelectedPlatformName}
-            >
+            <Select name="platform">
               <SelectTrigger className="relative h-auto bg-white px-4 py-3  pl-10">
                 <SelectValue placeholder="Select Platform" />
               </SelectTrigger>
@@ -183,6 +173,9 @@ export function GenerateLinks() {
                 ))}
               </SelectContent>
             </Select>
+            <div className="text-xs text-red-700">
+              {errors ? errors.platform : ""}
+            </div>
           </div>
           <div className="flex flex-col ">
             <p className="mb-1 text-xs">Link</p>
@@ -197,25 +190,7 @@ export function GenerateLinks() {
                 name="link"
                 id="link"
                 className="px-4 py-3 pl-10 text-base"
-                value={
-                  selectedPlatform
-                    ? `${selectedPlatform.link}${userInput}`
-                    : userInput
-                }
-                onChange={(e) => {
-                  const newValue = e.target.value;
-                  if (
-                    selectedPlatform &&
-                    newValue.startsWith(selectedPlatform.link)
-                  ) {
-                    setUserInput(newValue.slice(selectedPlatform.link.length));
-                  } else if (
-                    selectedPlatform &&
-                    !newValue.startsWith(selectedPlatform.link)
-                  ) {
-                    setUserInput("");
-                  }
-                }}
+                defaultValue={userLinksData ? userLinksData.link : ""}
               />
             </div>
           </div>
@@ -228,6 +203,9 @@ export function GenerateLinks() {
 export default function Links() {
   // this state helps to show or hide the banner / links in the UI.
   const [enableLinks, setEnableLinks] = useState(false);
+
+  //unused for now - add in loader to then decide on whether to show links opener (when no links) or existing links tab.
+  const { userData } = useLoaderData<typeof loader>();
 
   return (
     <div className="flex h-full flex-col gap-10">

@@ -1,0 +1,38 @@
+[
+  {
+    "name": "GitHub",
+    "icon": "/icons/icon-github.svg",
+    "link": "https://github.com/",
+    "color": "#171515"
+  },
+  {
+    "name": "Twitter",
+    "icon": "/icons/icon-twitter.svg",
+    "link": "https://twitter.com/",
+    "color": "#1DA1F2"
+  },
+  {
+    "name": "YouTube",
+    "icon": "/icons/icon-youtube.svg",
+    "link": "https://youtube.com/",
+    "color": "#FF0000"
+  },
+  {
+    "name": "LinkedIn",
+    "icon": "/icons/icon-linkedin.svg",
+    "link": "https://linkedin.com/",
+    "color": "#0077B5"
+  },
+  {
+    "name": "Codepen",
+    "icon": "/icons/icon-codepen.svg",
+    "link": "https://codepen.io/",
+    "color": "#4FBA49"
+  },
+  {
+    "name": "Codewars",
+    "icon": "/icons/icon-codewars.svg",
+    "link": "https://www.codewars.com/",
+    "color": "#333"
+  }
+]
