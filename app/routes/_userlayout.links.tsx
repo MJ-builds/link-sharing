@@ -4,7 +4,7 @@ import type {
   LoaderFunctionArgs,
   ActionFunctionArgs,
 } from "@remix-run/node";
-
+import React, { useState } from "react";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 
 import { Button } from "~/components/ui/button";
@@ -20,7 +20,6 @@ import {
 } from "~/components/ui/select";
 
 // CONTEXT_TEST
-import { useState } from "react";
 import { requireAuthCookie } from "~/auth.server";
 import { prisma } from "~/db/prisma";
 
@@ -63,6 +62,8 @@ const UserLinksSchema = z.object({
 export async function action({ request }: ActionFunctionArgs) {
   let userId = await requireAuthCookie(request);
   const formData = await request.formData();
+  const intent = formData.get("intent");
+
   const submission = parse(formData, {
     schema: UserLinksSchema,
   });
@@ -106,6 +107,13 @@ export async function action({ request }: ActionFunctionArgs) {
     },
   });
 
+  if (intent === "delete") {
+    await prisma.userlinks.delete({
+      where: { userId: userId },
+    });
+    return json({ deleted: true });
+  }
+
   return json({ message: "success" });
 }
 
@@ -127,15 +135,19 @@ export function GetStartedBanner() {
   );
 }
 
-export function GenerateLinks() {
-  const userLinksData = useLoaderData<typeof loader>();
+export function GenerateLinks({ setEnableLinks }: any) {
+  const { userLinksData } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const errors =
     actionData?.status === "error" ? actionData.submission.error : null;
-  // const selectedPlatform = platforms.find(
-  //   (platform) => platform.name === platform,
-  // );
 
+  if (actionData?.deleted) {
+    setEnableLinks(false);
+  }
+
+  const [selectedPlatform, setSelectedPlatform] = useState(
+    userLinksData?.platform,
+  );
   return (
     <Form method="POST" id="linksForm">
       <div className="flex h-auto w-full rounded-xl bg-[#FAFAFA] text-[#737373]">
@@ -148,18 +160,26 @@ export function GenerateLinks() {
               </div>
               Link #1
             </div>
-            <div className="text-base">Remove</div>
+            <Button
+              className="text-base"
+              type="submit"
+              name="intent"
+              value="delete"
+            >
+              Remove
+            </Button>
           </div>
           <div className="flex flex-col">
             <p className="mb-1 text-xs">Platform</p>
-            <Select name="platform">
+            <Select
+              name="platform"
+              value={selectedPlatform}
+              onValueChange={(value) => setSelectedPlatform(value)}
+            >
               <SelectTrigger className="relative h-auto bg-white px-4 py-3  pl-10">
-                <SelectValue
-                  placeholder={
-                    userLinksData ? userLinksData.platform : "select platform"
-                  }
-                />
+                <SelectValue placeholder="select platform" />
               </SelectTrigger>
+
               <SelectContent className="bg-white">
                 {platforms.map((platform, index) => (
                   <SelectItem
@@ -184,18 +204,17 @@ export function GenerateLinks() {
           <div className="flex flex-col ">
             <p className="mb-1 text-xs">Link</p>
             <div className="relative flex items-center justify-center text-center">
-              {/* <img
-              src="/icons/icon-link.svg"
-              className="absolute left-3 top-1/2 transform -translate-y-1/2"
-            /> */}
               <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 transform" />
               <Input
                 type="text"
                 name="link"
                 id="link"
                 className="px-4 py-3 pl-10 text-base"
-                defaultValue={userLinksData ? userLinksData.link : ""}
+                defaultValue={userLinksData ? userLinksData?.link : null}
               />
+            </div>
+            <div className="text-xs text-red-700">
+              {errors ? errors.link : ""}
             </div>
           </div>
         </div>
@@ -205,11 +224,10 @@ export function GenerateLinks() {
 }
 
 export default function Links() {
-  // this state helps to show or hide the banner / links in the UI.
-  const [enableLinks, setEnableLinks] = useState(false);
-
   //unused for now - add in loader to then decide on whether to show links opener (when no links) or existing links tab.
-  const { userData } = useLoaderData<typeof loader>();
+  const { userLinksData } = useLoaderData<typeof loader>();
+
+  const [enableLinks, setEnableLinks] = useState(false);
 
   return (
     <div className="flex h-full flex-col gap-10">
@@ -228,13 +246,29 @@ export default function Links() {
       >
         + Add new link
       </Button>
+      {/**
+       * This component rendering is conditional.
+       * - If 'enableLinks' is false and 'userLinksData' exists, it will render 'GenerateLinks' component.
+       * - If 'enableLinks' is false and 'userLinksData' does not exist, it will render 'GetStartedBanner' component.
+       * - If 'enableLinks' is true, it will always render the 'GenerateLinks' component.
+       */}
 
-      {/* insert get started here */}
-      {!enableLinks ? <GetStartedBanner /> : <GenerateLinks />}
+      {/* NB THIS REMAINS BUGGED! Need to figure out an auto-refresh if we delete links */}
+      {!enableLinks ? (
+        userLinksData ? (
+          <GenerateLinks setEnableLinks={setEnableLinks} />
+        ) : (
+          <GetStartedBanner />
+        )
+      ) : (
+        <GenerateLinks setEnableLinks={setEnableLinks} />
+      )}
 
       <div className="flex h-auto w-full items-end justify-end border-t-2 bg-white py-6">
         <Button
           type="submit"
+          name="intent"
+          value="save"
           form="linksForm"
           className="bg-[#633CFF] px-7 py-3 text-base font-medium text-white hover:bg-[#EFEBFF]"
         >
