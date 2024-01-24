@@ -19,7 +19,7 @@ export default function Layout() {
       <div className="mx-auto flex h-auto w-auto self-start bg-[#FAFAFA] pt-10 md:self-center md:pt-0">
         <div className="flex flex-col gap-[51px]">
           <div className="justify-left flex pl-10 md:justify-center md:pl-0">
-            <img src="/icons/logo-devlinks-large.svg" />
+            <img src="/icons/logo-devlinks-large.svg" alt="logo" />
           </div>
           <Outlet />
         </div>

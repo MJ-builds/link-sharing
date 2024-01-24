@@ -1,17 +1,7 @@
-/*
- * Copyright (c) 2024. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
- * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
- * Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
- * Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
- * Vestibulum commodo. Ut rhoncus gravida arcu.
- */
 
-import {
-  type ActionFunctionArgs,
-  MetaFunction,
-  json,
-  redirect,
-} from "@remix-run/node";
+
+import { json, redirect, type MetaFunction, type ActionFunctionArgs } from "@remix-run/node";
+
 import { Form, NavLink, useActionData } from "@remix-run/react";
 
 import { Input } from "~/components/ui/input";
@@ -53,12 +43,9 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 }
 
-
-
 export default function Login() {
-  const actionData= useActionData<typeof action>();
-  const emailError: string | undefined
-      = actionData?.errors?.email;
+  const actionData = useActionData<typeof action>();
+  const emailError: string | undefined = actionData?.errors?.email;
   return (
     <div className="w-screen rounded-xl bg-[#FFFFFF] p-10 md:w-full">
       <div>

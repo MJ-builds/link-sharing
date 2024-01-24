@@ -27,7 +27,7 @@ import { prisma } from "~/db/prisma";
 // fine here for now
 import platforms from "~/platforms/platforms.json";
 
-import { optional, z } from "zod";
+import { z } from "zod";
 import { parse } from "@conform-to/zod";
 
 export const meta: MetaFunction = () => {
@@ -128,7 +128,7 @@ export function GetStartedBanner() {
 }
 
 export function GenerateLinks() {
-  const { userLinksData } = useLoaderData<typeof loader>();
+  const userLinksData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const errors =
     actionData?.status === "error" ? actionData.submission.error : null;
@@ -154,7 +154,11 @@ export function GenerateLinks() {
             <p className="mb-1 text-xs">Platform</p>
             <Select name="platform">
               <SelectTrigger className="relative h-auto bg-white px-4 py-3  pl-10">
-                <SelectValue placeholder="Select Platform" />
+                <SelectValue
+                  placeholder={
+                    userLinksData ? userLinksData.platform : "select platform"
+                  }
+                />
               </SelectTrigger>
               <SelectContent className="bg-white">
                 {platforms.map((platform, index) => (

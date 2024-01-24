@@ -1,8 +1,6 @@
-import {
-  type ActionFunctionArgs,
-  MetaFunction,
-  redirect,
-} from "@remix-run/node";
+import { redirect } from "@remix-run/node";
+import type { MetaFunction, ActionFunctionArgs } from "@remix-run/node";
+
 import { Form, NavLink, useActionData } from "@remix-run/react";
 
 import { signupValidate } from "~/lib/utils";

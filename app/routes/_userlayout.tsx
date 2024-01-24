@@ -59,7 +59,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 
   if (!userLinks) {
-    return json({ error: "User links not found" });
+    return json({ userId, userData });
   }
 
   return json({
@@ -110,7 +110,7 @@ export function EmptyPhone() {
         )}
       </svg>
 
-      {userData.profileImage ? (
+      {userData?.profileImage ? (
         <div
           style={{
             width: "96px",
@@ -128,15 +128,15 @@ export function EmptyPhone() {
         <div></div>
       )}
 
-      {userData.firstName && userData.lastName ? (
+      {userData?.firstName && userData?.lastName ? (
         <div className=" absolute left-[73.5px] top-[185px] flex h-[16px] w-[160px] items-center justify-center bg-white  text-lg font-semibold text-[#333]">
           {" "}
-          {userData.firstName} {userData.lastName}
+          {userData?.firstName} {userData?.lastName}
         </div>
       ) : (
         <div></div>
       )}
-      {userData.firstName && userData.lastName ? (
+      {userData?.firstName && userData?.lastName ? (
         <div className=" absolute left-[117.5px] top-[214px] flex h-[8px] w-[72px] items-center justify-center bg-white text-sm font-normal text-[#737373]">
           {" "}
           {userData.email}

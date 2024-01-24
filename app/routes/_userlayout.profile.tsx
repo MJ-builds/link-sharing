@@ -1,12 +1,13 @@
-import type {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  MetaFunction,
-} from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
-import { json,  unstable_composeUploadHandlers as composeUploadHandlers,
+import {
+  json,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  MetaFunction,
+  unstable_composeUploadHandlers as composeUploadHandlers,
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
-  unstable_parseMultipartFormData as parseMultipartFormData } from "@remix-run/node";
+  unstable_parseMultipartFormData as parseMultipartFormData,
+} from "@remix-run/node";
 
 import { requireAuthCookie } from "~/auth.server";
 import { Button } from "~/components/ui/button";
@@ -23,7 +24,7 @@ export const meta: MetaFunction = () => {
     {
       name: "description",
       content: "Layout Index",
-    }
+    },
   ];
 };
 
@@ -36,68 +37,64 @@ export async function loader({ request }: LoaderFunctionArgs) {
       email: true,
       firstName: true,
       lastName: true,
-      profileImage: true, // unsure
+      profileImage: true,
     },
   });
   return json({ userData });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-
   let userId = await requireAuthCookie(request);
 
-  const uploadHandler = composeUploadHandlers(
-    async ({ name, data }) => {
-      if (name !== "img") {
-        return undefined
-      }
+  const uploadHandler = composeUploadHandlers(async ({ name, data }) => {
+    if (name !== "img") {
+      return undefined;
+    }
 
-      const uploadedImage = await uploadImage(data)
-      return uploadedImage.secure_url;
-    },
-    createMemoryUploadHandler()
-  );
+    const uploadedImage = await uploadImage(data);
+    return uploadedImage.secure_url;
+  }, createMemoryUploadHandler());
 
-  const formData = await parseMultipartFormData(request, uploadHandler)
+  const formData = await parseMultipartFormData(request, uploadHandler);
   const firstName = String(formData.get("firstName"));
   const lastName = String(formData.get("lastName"));
-  let imageSource = String(formData.get('img'))
+  const img = String(formData.get("img"));
+  const formName = formData.get("formName");
 
-  let errors = await fullNameValidate(firstName, lastName);
-  if (errors) {
-    return json({ errors }, { status: 400 });
+  if (formName === "updateProfile") {
+    let errors = await fullNameValidate(firstName, lastName);
+    if (errors) {
+      return json({ errors }, { status: 400 });
+    }
+    await prisma.user.update({
+      where: { id: userId },
+      data: { firstName, lastName },
+    });
   }
-
-  console.log(imageSource)
-
-  await prisma.user.update({
-    where: { id: userId },
-    data: { firstName, lastName, profileImage: imageSource },
-  });
+  if (formName === "updateImage" && img) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { profileImage: img },
+    });
+  }
 
   return json({ success: "Profile updated successfully" });
 }
-// rename to something better - also add image to shape when implemented
-type LoaderData = {
-  userData: {
-  firstName: string,
-  lastName: string,
-  email: string,
+
+const handleSubmit = (event: any) => {
+  if (event.target.files.length) {
+    // Get a reference to the form element
+    const form = event.target.form;
+
+    // Submit the form
+    form.requestSubmit();
   }
-}
-// rename to something better
-type ActionData = {
-  errors: {
-    firstName: string,
-    lastName: string
-  }
-}
+};
 
 export default function Profile() {
-  const { userData } = useLoaderData<LoaderData>();
-  const { firstName, lastName, email } = userData;
+  const { userData } = useLoaderData<typeof loader>();
 
-  const actionData = useActionData<ActionData>();
+  const actionData = useActionData<typeof action>();
   let firstNameErrors = actionData?.errors?.firstName;
   let lastNameErrors = actionData?.errors?.lastName;
 
@@ -112,27 +109,57 @@ export default function Profile() {
         </p>
       </div>
       {/* image upload multipart - working on */}
-      <Form method="POST" id="profileForm" encType='multipart/form-data'>
-        <div className="flex flex-col gap-6">
-          <div className="flex h-auto w-full justify-center gap-3 rounded-xl bg-[#FAFAFA] p-5">
-            <div className="grid h-auto w-full grid-cols-3 gap-4">
-              <div className="flex flex-1 items-center justify-start">
-                Profile picture
-              </div>
+      <div className="flex flex-col gap-6">
+        <div className="flex h-auto w-full justify-center gap-3 rounded-xl bg-[#FAFAFA] p-5">
+          <div className="grid h-auto w-full grid-cols-3 gap-4">
+            <div className="flex flex-1 items-center justify-start">
+              Profile picture
+            </div>
 
-              <Label className='hover:cursor-pointer' htmlFor="img" >
-              <div className="flex h-[193px] flex-1 flex-col items-center justify-center gap-2 rounded-xl bg-[#EFEBFF] font-semibold text-[#633CFF]">
-                <Input className='hidden' type='file' name='img' id='img' accept="image/png, image/jpeg"/>
-                <UploadImageIcon />
-                <div className="">+ Upload Image</div>
-              </div>
+            <Form
+              method="POST"
+              id="imageForm"
+              encType="multipart/form-data"
+              // action="/former"
+              onChange={handleSubmit}
+            >
+              <input type="hidden" name="formName" value="updateImage" />
+              <Label className="hover:cursor-pointer" htmlFor="img">
+                {userData?.profileImage ? (
+                  <img
+                    src={userData.profileImage}
+                    className="h-[193px] rounded-xl object-cover"
+                  />
+                ) : (
+                  <div className="flex h-[193px] flex-1 flex-col items-center justify-center gap-2 rounded-xl bg-[#EFEBFF] font-semibold text-[#633CFF]">
+                    <UploadImageIcon />
+                    <div className="">+ Upload Image</div>
+                  </div>
+                )}
+                <Input
+                  className="hidden"
+                  type="file"
+                  name="img"
+                  id="img"
+                  accept="image/png, image/jpeg"
+                  onChange={handleSubmit}
+                />
               </Label>
-              <div className="flex h-auto flex-1 flex-col justify-center pl-2 text-start text-xs">
-                <div>Image must be below 1024x1024px.</div>
-                <div>Use PNG or JPG format.</div>
-              </div>
+            </Form>
+
+            <div className="flex h-auto flex-1 flex-col justify-center pl-2 text-start text-xs">
+              <div>Image must be below 1024x1024px.</div>
+              <div>Use PNG or JPG format.</div>
             </div>
           </div>
+        </div>
+        <Form
+          method="POST"
+          name="profileForm"
+          id="profileForm"
+          encType="multipart/form-data"
+        >
+          <input type="hidden" name="formName" value="updateProfile" />
           <div className="flex h-auto w-full justify-center gap-3 rounded-xl bg-[#FAFAFA] p-5">
             <div className="flex w-full flex-col gap-3">
               <div className="flex flex-row items-center gap-4">
@@ -148,7 +175,9 @@ export default function Profile() {
                     type="text"
                     name="firstName"
                     id="firstName"
-                    defaultValue={firstName ? firstName : ""}
+                    defaultValue={
+                      userData?.firstName ? userData?.firstName : ""
+                    }
                     placeholder="e.g. John"
                     className={`flex ${
                       firstNameErrors
@@ -174,7 +203,7 @@ export default function Profile() {
                     type="text"
                     name="lastName"
                     id="lastName"
-                    defaultValue={lastName ? lastName : ""}
+                    defaultValue={userData?.lastName ? userData?.lastName : ""}
                     placeholder="e.g. Appleseed"
                     className={`flex  ${
                       lastNameErrors
@@ -199,7 +228,7 @@ export default function Profile() {
                   type="email"
                   name="email"
                   id="email"
-                  defaultValue={email}
+                  defaultValue={userData?.email}
                   disabled={true}
                   placeholder="e.g. email@example.com"
                   className="flex min-w-[66%]"
@@ -207,8 +236,8 @@ export default function Profile() {
               </div>
             </div>
           </div>
-        </div>
-      </Form>
+        </Form>
+      </div>
       <div className="flex h-auto w-full items-end justify-end border-t-2 bg-white py-6">
         <Button
           type="submit"
