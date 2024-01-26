@@ -1,6 +1,9 @@
-
-
-import { json, redirect, type MetaFunction, type ActionFunctionArgs } from "@remix-run/node";
+import {
+  json,
+  redirect,
+  type MetaFunction,
+  type ActionFunctionArgs,
+} from "@remix-run/node";
 
 import { Form, NavLink, useActionData } from "@remix-run/react";
 
@@ -62,8 +65,9 @@ export default function Login() {
           </Label>
           <div className="relative flex items-center justify-center text-center">
             <img
-              src="/icons/icon-email.svg"
               className="absolute left-3 top-1/2 -translate-y-1/2 transform"
+              src="/icons/icon-email.svg"
+              alt="email icon"
             />
             <Input
               type="text"
@@ -85,8 +89,9 @@ export default function Login() {
           </Label>
           <div className="relative flex items-center justify-center text-center">
             <img
-              src="/icons/icon-password.svg"
               className="absolute left-3 top-1/2 -translate-y-1/2 transform"
+              src="/icons/icon-password.svg"
+              alt="password icon"
             />
             <Input
               type="password"

@@ -135,15 +135,11 @@ export function GetStartedBanner() {
   );
 }
 
-export function GenerateLinks({ setEnableLinks }: any) {
+export function GenerateLinks() {
   const { userLinksData } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const errors =
     actionData?.status === "error" ? actionData.submission.error : null;
-
-  if (actionData?.deleted) {
-    setEnableLinks(false);
-  }
 
   const [selectedPlatform, setSelectedPlatform] = useState(
     userLinksData?.platform,
@@ -256,12 +252,12 @@ export default function Links() {
       {/* NB THIS REMAINS BUGGED! Need to figure out an auto-refresh if we delete links */}
       {!enableLinks ? (
         userLinksData ? (
-          <GenerateLinks setEnableLinks={setEnableLinks} />
+          <GenerateLinks />
         ) : (
           <GetStartedBanner />
         )
       ) : (
-        <GenerateLinks setEnableLinks={setEnableLinks} />
+        <GenerateLinks />
       )}
 
       <div className="flex h-auto w-full items-end justify-end border-t-2 bg-white py-6">

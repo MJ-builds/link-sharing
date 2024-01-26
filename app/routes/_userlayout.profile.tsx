@@ -1,12 +1,14 @@
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import {
   json,
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
-  MetaFunction,
   unstable_composeUploadHandlers as composeUploadHandlers,
   unstable_createMemoryUploadHandler as createMemoryUploadHandler,
   unstable_parseMultipartFormData as parseMultipartFormData,
+} from "@remix-run/node";
+import type {
+  MetaFunction,
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
 } from "@remix-run/node";
 
 import { requireAuthCookie } from "~/auth.server";
@@ -128,6 +130,7 @@ export default function Profile() {
                 {userData?.profileImage ? (
                   <img
                     src={userData.profileImage}
+                    alt="User Profile"
                     className="h-[193px] rounded-xl object-cover"
                   />
                 ) : (
