@@ -50,7 +50,7 @@ export default function Login() {
   const actionData = useActionData<typeof action>();
   const emailError: string | undefined = actionData?.errors?.email;
   return (
-    <div className="w-screen rounded-xl bg-[#FFFFFF] p-10 md:w-full">
+    <div className="w-screen place-items-center rounded-xl bg-[#FFFFFF] p-10 md:w-full">
       <div>
         <h1 className="text-[32px] font-bold">Login</h1>
         <p className="mb-10 text-base text-[#737373]">

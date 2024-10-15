@@ -68,10 +68,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
     userLinks,
   });
 }
-
+type LoaderData = {
+  userId?: string;
+  userData?: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    profileImage: string | null;
+  };
+  userLinks?: any; // Replace 'any' with the actual type of userLinks
+  error?: string;
+};
 export function EmptyPhone() {
-  const { userData } = useLoaderData<typeof loader>();
-  const { userLinks } = useLoaderData<typeof loader>();
+  const { userData } = useLoaderData<typeof loader>() as LoaderData;
+  const { userLinks } = useLoaderData<typeof loader>() as LoaderData;
 
   return (
     <div className="relative">
